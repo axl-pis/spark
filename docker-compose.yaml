@@ -6,9 +6,9 @@ services:
             - "9090:8080"
             - "7077:7077"
         volumes:
-            - ./apps/appMaster:/opt/spark-apps
-            - ./datas/dataMaster:/opt/spark-data
-            - .logs/master:/opt/spark/logs
+            - ./app:/opt/spark/apps
+            - ./data:/opt/spark/data
+            - ./logs/master:/opt/spark/logs
         environment:
             - SPARK_WORKLOAD=master
         entrypoint: /bin/bash
@@ -30,9 +30,9 @@ services:
             # - SPARK_EXECUTOR_MEMORY=1G
             # - SPARK_LOCAL_IP=spark-worker-1
         volumes:
-            - ./apps/appWorker1:/opt/spark-apps
-            - ./datas/dataWorker1:/opt/spark-data
-            - .logs/worker1:/opt/spark/logs
+            - ./app:/opt/spark/apps
+            - ./data:/opt/spark/data
+            - ./logs/worker1:/opt/spark/logs
         command: ['/opt/spark/bin/spark-class', 'org.apache.spark.deploy.worker.Worker', 'spark://spark-master:7077']
 
     spark-worker-2:
@@ -51,7 +51,21 @@ services:
             # - SPARK_EXECUTOR_MEMORY=1G
             # - SPARK_LOCAL_IP=spark-worker-2
         volumes:
-            - ./apps/appWorker2:/opt/spark-apps
-            - ./datas/dataWorker2:/opt/spark-data
-            - .logs/worker2:/opt/spark/logs
+            - ./app:/opt/spark/apps
+            - ./data:/opt/spark/datals
+            - ./logs/worker2:/opt/spark/logs
         command: ['/opt/spark/bin/spark-class', 'org.apache.spark.deploy.worker.Worker', 'spark://spark-master:7077']
+
+    spark-submit:
+        container_name: spark-submit
+        image: apache/spark:latest
+        command: '/bin/bash'
+        depends_on:
+            - spark-master
+        environment:
+            - SPARK_MASTER=spark://spark-master:7077
+        stdin_open: true
+        tty: true
+        volumes:
+            - ./data:/opt/spark/data
+            - ./logs/submit:/opt/spark/logs
